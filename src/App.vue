@@ -5,11 +5,14 @@
       :message="modalMessage"
       :modalType="modalType"
     />
+
     <RegistrationForm
+      v-if="!userIsLogin"
+      :isJoin="false"
       @show-modal="openModal"
     />
 
-    <form @submit="subForm" v-if="false">
+    <form @submit="subForm" v-if="userIsLogin">
       <Tracker
           v-for="tracker in trackers"
           :tracker="tracker"

@@ -2,13 +2,19 @@
 <div class="forms">
   <h3>Форма для регистрации пользователя</h3>
   <div>
-    <label>Usename</label>
-    <input type="text" v-model="user.name">
-    <label>Email</label>
-    <input type="email" v-model="user.email">
-    <label>Password</label>
-    <input type="password" v-model="user.password">
-    <button @click="authorizeUser" >Зарегистрироваться</button>
+    <div>
+      <label>Usename</label>
+      <input type="text" v-model="user.name">
+    </div>
+    <div v-if="isJoin">
+      <label>Email</label>
+      <input type="email" v-model="user.email">
+    </div>
+    <div>
+      <label>Password</label>
+      <input type="password" v-model="user.password">
+    </div>
+    <button @click="authorizeUser">{{isJoin ? 'Зарегистрироваться' : 'Вход'}}</button>
   </div>
 </div>
 </template>
@@ -23,13 +29,14 @@ export default {
   },
   computed: {
     ...mapState([
+      'userIsLogin',
       'showModal',
       'user'
     ])
   },
   methods: {
     authorizeUser() {
-      const url = 'http://localhost:8000/user/join';
+      let url = 'http://localhost:8000/user/' + (this.isJoin ? 'join' : 'login');
       const options = {
         method: 'post',
         mode: 'cors',
@@ -43,9 +50,17 @@ export default {
       fetch(url, options)
         .then(res => res.json())
         .then(json => {
-          this.$emit('show-modal', json.message, json.type);
-          if(json.result) {
-            this.$store.commit('set', { user: {} })
+          if(this.isJoin) {
+            this.$emit('show-modal', json.message, json.type);
+            if(json.result) {
+              this.$store.commit('set', { userIsLogin: true });
+            }
+          } else {
+            if(json.result) {
+              this.$store.commit('set', { userIsLogin: true });
+            } else {
+              this.$emit('show-modal', json.message, json.type);
+            }
           }
         });
     }
