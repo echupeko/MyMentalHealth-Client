@@ -1,4 +1,5 @@
 export function apiCall(url, additionalParams, callback) {
+  //delete callback
   const options = {
     method: additionalParams.method,
     mode: 'cors',
@@ -12,6 +13,7 @@ export function apiCall(url, additionalParams, callback) {
   fetch(url, options)
     .then(res => res.json())
     .then(json => {
+
       callback(json);
     });
 }

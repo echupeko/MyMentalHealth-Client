@@ -40,4 +40,10 @@ export const MODAL_TYPE = {
   },
 }
 
+export const ACTION_TYPES = {
+  LOGIN_TYPE: 0,
+  JOIN_TYPE: 1,
+  LOGOUT_TYPE: 2
+}
+
 export const TRACKERS_LIMIT_ON_DAY = 5;

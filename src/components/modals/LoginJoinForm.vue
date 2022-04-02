@@ -1,6 +1,6 @@
 <template>
 <div class="action-modal welcome-modal">
-  <h3 class="row">Форма для {{ isJoin? actionType.JOIN_TYPE.title : actionType.LOGIN_TYPE.title }} пользователя</h3>
+  <h3 class="row">{{ title }}</h3>
   <div>
     <div class="row">
       <label>Usename</label>
@@ -20,22 +20,39 @@
 </template>
 
 <script>
+//обработка данных в компоненте
 import { mapState } from "vuex";
-import { apiCall } from "../methods";
+import { apiCall } from "../../utils/methods";
+import { ACTION_TYPES } from "../../assets/constants";
 
 export default {
   name: "RegistrationForm",
-  props: {
-    isJoin: Boolean
-  },
+  props: ['actionType'],
 
   computed: {
     ...mapState([
-      'actionType',
       'userIsLoged',
-      'showModal',
       'user'
-    ])
+    ]),
+
+    title() {
+      switch (this.actionType) {
+        case ACTION_TYPES.LOGIN_TYPE:
+          return "Вход пользователя";
+
+        case ACTION_TYPES.JOIN_TYPE:
+          return "Форма регистрации пользователя";
+
+        case ACTION_TYPES.LOGOUT_TYPE:
+          return "Выход пользователя";
+
+        default:
+          return '';
+      }
+    },
+    isJoin() {
+      return this.actionType === ACTION_TYPES.JOIN_TYPE
+    }
   },
 
   methods: {

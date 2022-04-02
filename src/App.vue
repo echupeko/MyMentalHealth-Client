@@ -1,29 +1,8 @@
 <template>
   <div>
-    <div class="full-frame" v-if="!userIsLoged">
-      <div class="welcome-modal" v-if="logIn && join">
-        <h2 class="welcome-modal__title row">Здравствуйте</h2>
-        <p class="welcome-modal__description row">Для продолжения необходимо войти в систему
-          <strong>Моя МенталОчка</strong>
-        </p>
-        <button class="btn" @click="showAction(this.actionType.LOGIN_TYPE.id)" v-if="!userIsLoged">Войти</button>
-        <p class="welcome-modal__description-link row small-text">У вас нет аккаунта?
-          <button class="welcome-modal__btn-link small-text" @click="showAction(this.actionType.JOIN_TYPE.id)" v-if="!userIsLoged">Зарегистрироваться</button>
-        </p>
-      </div>
-
-      <RegistrationForm
-          v-if="!logIn && !userIsLoged"
-          :isJoin="false"
-          @show-modal="openModal"
-      />
-
-      <RegistrationForm
-          v-if="!join && !userIsLoged"
-          :is-join="true"
-          @show-modal="openModal"
-      />
-    </div>
+<!--    <WelcomeModal-->
+<!--      v-if="!userIsLoged"-->
+<!--    />-->
 
     <div v-if="userIsLoged">
       <p>Вы, вошли под пользователем: {{ user.name }}</p>
@@ -36,7 +15,8 @@
       :modalType="modalType"
     />
 
-    <div class="history-tracker">
+    <div class="history-tracker" v-if="userIsLoged">
+      <input type="date" v-model="dateQuery">
       <button @click="getTrackersData">Получить данные трекеров</button>
       <div
           v-for="tracker in trackers"
@@ -45,7 +25,7 @@
       >
         <div class="timeSend">
           {{
-            new Date(Number(tracker.dateSend)).toLocaleString("ru", {
+            new Date( Number(tracker.dateSend) ).toLocaleString("ru", {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -57,6 +37,7 @@
             })
           }}
         </div>
+
         <Tracker
             v-for="track in tracker.dataTrackers"
             :tracker="track"
@@ -76,21 +57,23 @@
       />
       <button type="submit">Сохранить</button>
     </form>
+    <router-view />
   </div>
 </template>
 
 <script>
-import RegistrationForm from "./components/RegistrationForm";
+// import WelcomeModal from "./components/modals/WelcomeModal";
+import Modal from "./components/notifications/Modal";
 import Tracker from "./components/Tracker";
-import Modal from "./components/modal-frame/Modal";
-import { TRACKERS_INFO, TRACKERS_LIMIT_ON_DAY } from "./constants";
-import { apiCall } from "./methods";
+
+import { TRACKERS_INFO, TRACKERS_LIMIT_ON_DAY } from "./assets/constants";
+import { apiCall } from "./utils/methods";
 import { mapState } from 'vuex';
 
 export default {
   name: 'App',
   components: {
-    RegistrationForm,
+    // WelcomeModal,
     Tracker,
     Modal
   },
@@ -99,12 +82,10 @@ export default {
     return {
       modalMessage: "",
       modalType: null,
-      logIn: true,
-      logOut: true,
-      join: true,
       trackers: null,
       moreTrack: false,
-      TRACKERS_INFO
+      TRACKERS_INFO,
+      dateQuery: this.toDateInputValue(),
     }
   },
 
@@ -115,7 +96,7 @@ export default {
       'userIsLoged',
       'showModal',
       'user'
-    ])
+    ]),
   },
 
   mounted() {
@@ -123,17 +104,10 @@ export default {
   },
 
   methods: {
-    showAction(currentAction) {
-      switch (currentAction) {
-        case this.actionType.LOGIN_TYPE.id:
-          this.logIn = false;
-          break;
-        case this.actionType.JOIN_TYPE.id:
-          this.join = false;
-          break;
-        case this.actionType.LOGOUT_TYPE.id:
-          break;
-      }
+    toDateInputValue() {
+      const local = new Date();
+      local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
+      return local.toJSON().slice(0,10);
     },
 
     logout() {
@@ -149,19 +123,6 @@ export default {
         name,
         index
       })
-    },
-
-    openModal(message, type) {
-      if(message != undefined && type != undefined) {
-        this.modalMessage = message;
-        this.modalType = type;
-
-        const store = this.$store;
-        store.dispatch('openModal');
-        setTimeout(function () {
-          store.dispatch('closeModal');
-        }, 2000);
-      }
     },
 
     subForm() {
@@ -191,7 +152,7 @@ export default {
         const _this = this;
         const submitData = {
           userId: _this.user._id,
-          dateSend: Date.now(),
+          dateSend: new Date(_this.dateQuery).getTime(),
         };
 
         apiCall(
@@ -202,8 +163,9 @@ export default {
                 _this.trackers = response.trackers;
                 _this.trackers.forEach(item => {
                   if (item.dataTrackers.length > 0) {
-                    TRACKERS_INFO.forEach(track => {
-                      Object.assign(item.dataTrackers[track.id], track)
+                    item.dataTrackers.forEach(track => {
+                      let trackInfo = TRACKERS_INFO.find(findTrack => findTrack.id === track.id);
+                      if (trackInfo) Object.assign(track, trackInfo)
                     })
                   }
                 });
@@ -227,7 +189,8 @@ export default {
 }
 
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Montserrat", Segoe UI, Helvetica, Arial, sans-serif;
+  //font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #eeeeee;
