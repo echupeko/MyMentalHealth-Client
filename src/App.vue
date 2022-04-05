@@ -1,9 +1,10 @@
 <template>
   <div>
-<!--    <WelcomeModal-->
-<!--      v-if="!userIsLoged"-->
-<!--    />-->
-
+    <WelcomeModal
+      v-if="!userIsLoged"
+    />
+    <Chart :trackers="trackers" v-if="moreTrack" />
+    <div v-if="true">
     <div v-if="userIsLoged">
       <p>Вы, вошли под пользователем: {{ user.name }}</p>
       <button class="btn" @click="logout">Выйти</button>
@@ -16,7 +17,8 @@
     />
 
     <div class="history-tracker" v-if="userIsLoged">
-      <input type="date" v-model="dateQuery">
+      <input type="date" v-model="startDateQuery">
+      <input type="date" v-model="endDateQuery">
       <button @click="getTrackersData">Получить данные трекеров</button>
       <div
           v-for="tracker in trackers"
@@ -57,23 +59,27 @@
       />
       <button type="submit">Сохранить</button>
     </form>
-    <router-view />
+<!--    <router-view />-->
+    </div>
   </div>
 </template>
 
 <script>
-// import WelcomeModal from "./components/modals/WelcomeModal";
+import WelcomeModal from "./components/modals/WelcomeModal";
 import Modal from "./components/notifications/Modal";
 import Tracker from "./components/Tracker";
+import Chart from "./components/Chart";
 
 import { TRACKERS_INFO, TRACKERS_LIMIT_ON_DAY } from "./assets/constants";
+import { TrackerClass, DataTrackerClass } from "./assets/classes";
 import { apiCall } from "./utils/methods";
 import { mapState } from 'vuex';
 
 export default {
   name: 'App',
   components: {
-    // WelcomeModal,
+    Chart,
+    WelcomeModal,
     Tracker,
     Modal
   },
@@ -85,7 +91,8 @@ export default {
       trackers: null,
       moreTrack: false,
       TRACKERS_INFO,
-      dateQuery: this.toDateInputValue(),
+      startDateQuery: this.toDateInputValue(),
+      endDateQuery: this.toDateInputValue(),
     }
   },
 
@@ -128,52 +135,99 @@ export default {
     subForm() {
       //сделать обязательными все трекеры
       //обрабатывать пустые значения
-      const _this = this;
+      const trackerAnswerArray = [];
+      this.dataTrackers.forEach(item => {
+        let infoTracker = TRACKERS_INFO[item.id];
+        trackerAnswerArray.push(new DataTrackerClass(item.id, item.value, infoTracker.name, infoTracker.title, infoTracker.chartTitle, infoTracker.countPoint));
+      })
+
+      const tracker = new TrackerClass(Date.now(),  this.user._id, trackerAnswerArray);
       const submitData = {
-        userId: _this.user._id,
-        dateSend: Date.now(),
-        dataTrackers: _this.dataTrackers,
+        tracker,
         trackersLimit: TRACKERS_LIMIT_ON_DAY
-      };
+      }
 
-      apiCall(
-          'http://localhost:8000/trackers/update',
-          {method: 'post', body: {submitData: submitData}},
-          function (response) {
-            _this.openModal(response?.message, response?.type);
-      });
+      apiCall('http://localhost:8000/trackers/update', { method: 'post', body: { submitData: submitData } })
+        .then(res => res.json())
+        .then(json => {
+          this.openModal(json?.message, json?.type);
+        });
 
-      this.$store.commit('set', {dataTrackers: []});
+      this.$store.commit('set', { dataTrackers: [] });
       return false;
     },
 
     getTrackersData() {
+      //сортировка по дате
+
       if (!this.moreTrack) {
         const _this = this;
         const submitData = {
           userId: _this.user._id,
-          dateSend: new Date(_this.dateQuery).getTime(),
+          startDateSend: new Date(_this.startDateQuery).getTime(),
+          endDateSend: new Date(_this.endDateQuery).getTime(),
         };
 
         apiCall(
             'http://localhost:8000/trackers/get',
-            { method: 'post', body: { submitData: submitData } },
-            function (response) {
-              if (response.result) {
-                _this.trackers = response.trackers;
-                _this.trackers.forEach(item => {
-                  if (item.dataTrackers.length > 0) {
-                    item.dataTrackers.forEach(track => {
-                      let trackInfo = TRACKERS_INFO.find(findTrack => findTrack.id === track.id);
-                      if (trackInfo) Object.assign(track, trackInfo)
-                    })
-                  }
-                });
-                _this.moreTrack = true;
-              }
+            {method: 'post', body: {submitData: submitData}},
+        )
+          .then(res => res.json())
+          .then(response => {
+            if (response.result) {
+              // console.log(response)
 
-              _this.openModal(response?.message, response?.type);
-            });
+              _this.trackers = response.trackers;
+              _this.trackers.forEach(item => {
+                if (item.dataTrackers.length > 0) {
+                  item.dataTrackers.forEach(track => {
+                    let trackInfo = TRACKERS_INFO.find(findTrack => findTrack.id === track.id);
+                    if (trackInfo) Object.assign(track, trackInfo)
+                  })
+                }
+              });
+              _this.moreTrack = true;
+              console.log(_this.trackers)
+
+              // if (submitData.startDateSend !== submitData.endDateSend) {
+              //
+              //
+              //   const data = [];
+              //   let prevDate;
+              //   TRACKERS_INFO.forEach(item => {
+              //     let value = 0;
+              //     _this.trackers.forEach(track => {
+              //       let a = track.dataTrackers[0];
+              //       let dataTracker = new DataTrackerClass(a.id, a.value, a.name, a.title, a.chartTitle, a.countPoint);
+              //       let tracker = new TrackerClass(track.dateSend, track.userId, dataTracker);
+              //
+              //       console.log(tracker)
+              //       let nowDate = getDateRange(track.dateSend, track.dateSend);
+              //       if(!prevDate || nowDate.startDay - prevDate.startDay > 86400000 && nowDate.endDay - prevDate.endDay > 86400000) {
+              //         prevDate = nowDate;
+              //       }
+              //
+              //       if (nowDate.startDay - prevDate.startDay < 86400000 && nowDate.endDay - prevDate.endDay < 86400000) {
+              //         console.log(item.chartTitle, track.dataTrackers[item.id].value)
+              //         value += track.dataTrackers[item.id].value;
+              //       }
+              //     });
+              //     data.push(Math.round(value/_this.trackers.length))
+              //   });
+              //   _this.trackers = [
+              //     _this.trackers[0]
+              //   ];
+              //   _this.trackers[0].dataTrackers.forEach(item => {
+              //     item.value = data[item.id];
+              //   })
+              //   console.log(_this.trackers)
+              // }
+
+            }
+
+            _this.openModal(response?.message, response?.type);
+
+        });
       } else {
         this.moreTrack = false;
       }
@@ -196,7 +250,7 @@ export default {
   background-color: #eeeeee;
   text-align: center;
   color: #2c3e50;
-  height: 100vh;
+  //height: 100vh;
   width: 100%;
 
   @media (prefers-color-scheme: dark) {

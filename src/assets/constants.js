@@ -2,24 +2,28 @@ export const TRACKERS_INFO = [
   {
     id: 0,
     title: 'Оцените свои эмоции',
+    chartTitle: 'Эмоции',
     name: 'emotion',
     countPoint: 10
   },
   {
     id: 1,
     title: 'Оцените свою продуктивность',
+    chartTitle: 'Продуктивность',
     name: 'production',
     countPoint: 10
   },
   {
     id: 2,
     title: 'Оцените своё самочувствие',
+    chartTitle: 'Самочувствие',
     name: 'myself',
     countPoint: 10
   },
   {
     id: 3,
     title: 'Оцените своё состояние',
+    chartTitle: 'Состояние',
     name: 'quality',
     countPoint: 10
   }

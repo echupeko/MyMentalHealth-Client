@@ -32,13 +32,14 @@ export default new Vuex.Store({
         apiCall(
           'http://localhost:8000/user/authorized',
           { method:'post', body: { userName: userNameLoged } },
-          function (response) {
-            if(response.result) {
-              commit('set', { user: response.user });
-              commit('set', { userIsLoged: true });
-            }
+
+        ).then(res => res.json())
+        .then(response => {
+          if(response.result) {
+            commit('set', { user: response.user });
+            commit('set', { userIsLoged: true });
           }
-        );
+        });
       }
     },
 

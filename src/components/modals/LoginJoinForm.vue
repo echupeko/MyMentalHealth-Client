@@ -61,19 +61,21 @@ export default {
 
       apiCall(
           'http://localhost:8000/user/' + (_this.isJoin ? 'join' : 'login'),
-          { method: 'post', body: _this.user },
-          function (response) {
-        // Модальное окно отображается только с ошибками при логине и всегда при сообщения о регистрации
-        if (!response.result && !_this.isJoin || _this.isJoin) {
-          _this.$emit('show-modal', response.message, response.type);
-        }
-        // Если все прошло успешно установка флага для скрытия форм login/join
-        if (response.result) {
-          _this.$store.commit('set', {userIsLoged: true});
-          localStorage.userLogin = _this.user.name;
-          localStorage.dateLogin = Date.now();
-        }
-      });
+          {method: 'post', body: _this.user},
+      )
+        .then(res => res.json())
+        .then(response => {
+          // Модальное окно отображается только с ошибками при логине и всегда при сообщения о регистрации
+          if (!response.result && !_this.isJoin || _this.isJoin) {
+            _this.$emit('show-modal', response.message, response.type);
+          }
+          // Если все прошло успешно установка флага для скрытия форм login/join
+          if (response.result) {
+            _this.$store.commit('set', {userIsLoged: true});
+            localStorage.userLogin = _this.user.name;
+            localStorage.dateLogin = Date.now();
+          }
+        });
     }
   }
 }

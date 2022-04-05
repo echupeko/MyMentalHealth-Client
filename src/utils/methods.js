@@ -1,5 +1,4 @@
-export function apiCall(url, additionalParams, callback) {
-  //delete callback
+export const apiCall = (url, additionalParams) => {
   const options = {
     method: additionalParams.method,
     mode: 'cors',
@@ -10,10 +9,20 @@ export function apiCall(url, additionalParams, callback) {
     },
   };
 
-  fetch(url, options)
-    .then(res => res.json())
-    .then(json => {
+  return fetch(url, options);
+}
 
-      callback(json);
-    });
+export const getDateRange = (startDateSend, endDateSend) => {
+  let startDay = new Date(startDateSend);
+  let endDay = new Date(endDateSend);
+
+  startDay.setHours(0);
+  startDay.setMinutes(0);
+  startDay.setSeconds(0);
+
+  endDay.setHours(23);
+  endDay.setMinutes(59);
+  endDay.setSeconds(59);
+
+  return { startDay, endDay };
 }
