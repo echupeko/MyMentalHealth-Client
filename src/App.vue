@@ -1,74 +1,102 @@
 <template>
   <div>
-    <WelcomeModal
-      v-if="!userIsLoged"
-    />
-    <Chart :trackers="trackers" v-if="moreTrack" />
-    <div v-if="true">
-    <div v-if="userIsLoged">
-      <p>Вы, вошли под пользователем: {{ user.name }}</p>
-      <button class="btn" @click="logout">Выйти</button>
-    </div>
 
-    <Modal
-      v-if="showModal"
-      :message="modalMessage"
-      :modalType="modalType"
-    />
-
-    <div class="history-tracker" v-if="userIsLoged">
-      <input type="date" v-model="startDateQuery">
-      <input type="date" v-model="endDateQuery">
-      <button @click="getTrackersData">Получить данные трекеров</button>
-      <div
-          v-for="tracker in trackers"
-          :key="tracker.id"
-          class="tracker-list"
-      >
-        <div class="timeSend">
-          {{
-            new Date( Number(tracker.dateSend) ).toLocaleString("ru", {
+    <header v-if="userIsLoged">
+      <div class="time-info">
+        <h2>
+          Сегодня {{
+            new Date(Date.now()).toLocaleString('ru',{
               year: 'numeric',
               month: 'long',
               day: 'numeric',
-              weekday: 'long',
-              timezone: 'UTC',
-              hour: 'numeric',
-              minute: 'numeric',
-              second: 'numeric'
+              weekday: 'long'
             })
           }}
-        </div>
-
-        <Tracker
-            v-for="track in tracker.dataTrackers"
-            :tracker="track"
-            :key="track.id"
-            :read-only="true"
-        />
+        </h2>
+        <h3>У вас осталось {{ 1 }} оценок</h3>
       </div>
 
+      <TopLogoutBox
+        class="top-box inverse"
+        @logout="logout"
+      />
+    </header>
+
+    <div id="startPage">
+      <form class="tracker-save" @submit.prevent="subForm" v-if="userIsLoged">
+        <Tracker
+            v-for="tracker in TRACKERS_INFO"
+            :tracker="tracker"
+            :key="tracker.id"
+            @selectPoint="selectPoint"
+        />
+        <button class="btn" type="submit">Сохранить</button>
+      </form>
     </div>
 
-    <form class="tracker-save" @submit.prevent="subForm" v-if="userIsLoged">
-      <Tracker
-          v-for="tracker in TRACKERS_INFO"
-          :tracker="tracker"
-          :key="tracker.id"
-          @selectPoint="selectPoint"
+    <div v-if="true">
+      <WelcomeModal
+          v-if="!userIsLoged"
       />
-      <button type="submit">Сохранить</button>
-    </form>
-<!--    <router-view />-->
+      <Chart :trackers="trackers" v-if="moreTrack" />
+      <div v-if="true">
+        <Modal
+            v-if="showModal"
+            :message="modalMessage"
+            :modalType="modalType"
+        />
+
+        <div class="history-tracker" v-if="userIsLoged">
+         <DateInterval
+           :startDate="startDateQuery"
+           :endDate="endDateQuery"
+           @update="selectPeriodTrackers"
+         />
+          <button @click="getTrackersData">Получить данные трекеров</button>
+          <div
+              v-for="tracker in trackers"
+              :key="tracker.id"
+              class="tracker-list"
+          >
+            <div class="timeSend">
+              {{
+                new Date( Number(tracker.dateSend) ).toLocaleString("ru", {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  weekday: 'long',
+                  timezone: 'UTC',
+                  hour: 'numeric',
+                  minute: 'numeric',
+                  second: 'numeric'
+                })
+              }}
+            </div>
+
+            <Tracker
+                v-for="track in tracker.dataTrackers"
+                :tracker="track"
+                :key="track.id"
+                :read-only="true"
+            />
+          </div>
+
+        </div>
+
+
+<!--            <router-view />-->
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import TopLogoutBox from "@/components/profile/TopLogoutBox";
+import DateInterval from "@/components/utils/DateInterval";
+import Chart from "./components/stats/Chart";
 import WelcomeModal from "./components/modals/WelcomeModal";
-import Modal from "./components/notifications/Modal";
 import Tracker from "./components/Tracker";
-import Chart from "./components/Chart";
+import Modal from "./components/notifications/Modal";
 
 import { TRACKERS_INFO, TRACKERS_LIMIT_ON_DAY } from "./assets/constants";
 import { TrackerClass, DataTrackerClass } from "./assets/classes";
@@ -78,6 +106,8 @@ import { mapState } from 'vuex';
 export default {
   name: 'App',
   components: {
+    TopLogoutBox,
+    DateInterval,
     Chart,
     WelcomeModal,
     Tracker,
@@ -111,6 +141,11 @@ export default {
   },
 
   methods: {
+    selectPeriodTrackers(startDate, endDate) {
+      this.startDateQuery = startDate;
+      this.endDateQuery = endDate;
+    },
+
     toDateInputValue() {
       const local = new Date();
       local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
@@ -155,6 +190,19 @@ export default {
 
       this.$store.commit('set', { dataTrackers: [] });
       return false;
+    },
+
+    openModal(message, type) {
+      if(message !== undefined && type !== undefined) {
+        this.modalMessage = message;
+        this.modalType = type;
+
+        const store = this.$store;
+        store.dispatch('openModal');
+        setTimeout(function () {
+          store.dispatch('closeModal');
+        }, 2000);
+      }
     },
 
     getTrackersData() {
@@ -225,7 +273,7 @@ export default {
 
             }
 
-            _this.openModal(response?.message, response?.type);
+            this.openModal(response?.message, response?.type);
 
         });
       } else {
@@ -237,44 +285,89 @@ export default {
 </script>
 
 <style lang="less">
+@import "styles/mixins";
+
 * {
   margin: 0;
   padding: 0;
 }
 
+body {
+  .dark;
+  .light;
+
+  display: flex;
+  justify-content: center;
+}
+
 #app {
   font-family: "Montserrat", Segoe UI, Helvetica, Arial, sans-serif;
-  //font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #eeeeee;
   text-align: center;
-  color: #2c3e50;
-  //height: 100vh;
-  width: 100%;
+  width: 70%;
 
-  @media (prefers-color-scheme: dark) {
-    background:  #333; color: white;
-  }
-
-  @media (prefers-color-scheme: light) {
-     background: white; color:  #555;
+  a {
+    text-decoration: none;
+    outline: none;
+    color: #58744f;
   }
 
   .small-text {
     font-size: 12px;
   }
 
-  .btn {
-    padding: 10px;
-    background-color: #b8ff95;
-    border-radius: 10px;
-    border: none;
-    font-size: 17px;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #484848;
-    cursor: pointer;
+  .logo {
+    width: 200px;
+    height: 130px;
+    background-image: url("assets/logo.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+  }
+
+  button:not(.not-btn), input[type=submit], input[type=submit], .btn {
+    .custom-button;
+  }
+
+  input {
+    .custom-input;
+  }
+
+  header {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 20px;
+
+    .top-box {
+      .dark;
+      .light;
+
+      position: absolute;
+      right: 0;
+      display: flex;
+      flex-direction: row;
+      height: max-content;
+    }
+
+    #startPage {
+      position: relative;
+      padding: 10px 20px;
+
+      &:before {
+        content: '';
+        position: absolute;
+        display: block;
+        left: 0;
+        top: 30px;
+        bottom: 30px;
+        width: 2px;
+        background-color: @lighten-gray;
+        border-radius: 50%;
+      }
+    }
   }
 
   .row {
@@ -295,7 +388,7 @@ export default {
     left: 50%;
     transform: translate(-50%,-50%);
     display: flex;
-    background-color: #eeeeee;
+    background-color: @white;
   }
 
   .history-tracker {
@@ -305,6 +398,43 @@ export default {
     .tracker-list {
       border: 1px solid black;
       margin: 10px auto;
+    }
+  }
+
+  .tracker {
+    display: flex;
+    flex-direction: column;
+    width: max-content;
+
+    .title {
+      margin: 5px 10px;
+      text-align: left;
+    }
+
+    .point-list {
+      display: flex;
+
+      .point {
+        margin: 0 5px;
+
+        .custom-radio {
+          .custom-input;
+
+          width: 20px;
+          border-radius: 30px;
+          cursor: pointer;
+
+          &:hover {
+            background-color: lighten(@gray, 20%);
+            color: @white;
+          }
+
+          &.selected {
+            background-color: @green;
+            color: @white;
+          }
+        }
+      }
     }
   }
 

@@ -6,5 +6,5 @@ import store from './utils/store'
 
 const app =createApp(App);
 app.use(Vuex)
-  .use(store)
-  .mount('#app');
+    .use(store)
+    .mount('#app');

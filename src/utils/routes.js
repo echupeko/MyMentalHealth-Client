@@ -3,6 +3,7 @@ import { ACTION_TYPES } from "../assets/constants";
 
 import WelcomeModal from "../components/modals/WelcomeModal";
 import LoginJoinForm from "../components/modals/LoginJoinForm";
+import ProfilePage from "@/components/profile/ProfilePage";
 
 export default createRouter({
   history: createWebHashHistory(),
@@ -24,6 +25,10 @@ export default createRouter({
       props: {
         actionType: ACTION_TYPES.JOIN_TYPE
       }
+    },
+    {
+      path: '/profile',
+      component: ProfilePage,
     }
   ]
 })

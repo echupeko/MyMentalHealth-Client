@@ -1,13 +1,15 @@
 <template>
-  <Line :chart-data="chartData"
+  <Bar :chart-data="chartData"
         :responsive="true"
         :chart-options="chartOptions"
+        :width="1000"
+        :height="300"
         class="chart"
   />
 </template>
 
 <script>
-  import { Line } from 'vue-chartjs'
+  import { Bar } from 'vue-chartjs'
   import { TRACKERS_INFO } from "@/assets/constants";
 
 
@@ -16,7 +18,7 @@
     Title,
     Tooltip,
     Legend,
-    LineElement,
+    BarElement,
     LinearScale,
     PointElement,
     CategoryScale,
@@ -26,7 +28,7 @@
       Title,
       Tooltip,
       Legend,
-      LineElement,
+      BarElement,
       LinearScale,
       PointElement,
       CategoryScale
@@ -34,7 +36,7 @@
 
   export default {
     name: 'Chart',
-    components: { Line },
+    components: { Bar },
     props: {
       trackers: {
         type: Object,
@@ -135,6 +137,7 @@
 
 <style scoped>
 .chart {
-  width: 300px;
+  width: 1000px;
+  height: 300px;
 }
 </style>

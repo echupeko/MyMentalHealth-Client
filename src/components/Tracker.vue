@@ -60,44 +60,5 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.tracker {
-  display: flex;
-  flex-direction: column;
-  width: max-content;
 
-  .title {
-    margin: 5px 10px;
-    text-align: left;
-  }
-
-  .point-list {
-    display: flex;
-
-    .point {
-      margin: 0 5px;
-
-      .custom-radio {
-        display: flex;
-        justify-content: center;
-        align-content: center;
-        width: 20px;
-        border-radius: 30px;
-        border: 1px solid gray;
-        margin: 0;
-        padding-top: 2px;
-        cursor: pointer;
-
-        &:hover {
-          background-color: rgba(120, 140, 241, 0.98);
-          color: #eeeeee;
-        }
-
-        &.selected {
-          background-color: rgba(241, 120, 148, 0.98);
-          color: #eeeeee;
-        }
-      }
-    }
-  }
-}
 </style>

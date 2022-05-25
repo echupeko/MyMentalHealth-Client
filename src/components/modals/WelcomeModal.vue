@@ -7,7 +7,7 @@
       </p>
       <button class="btn" @click="showAction(this.ACTION_TYPES.LOGIN_TYPE)" v-if="!userIsLoged">Войти</button>
       <p class="welcome-modal__description-link row small-text">У вас нет аккаунта?
-        <button class="welcome-modal__btn-link small-text" @click="showAction(this.ACTION_TYPES.JOIN_TYPE)" v-if="!userIsLoged">Зарегистрироваться</button>
+        <button class="welcome-modal__btn-link not-btn small-text" @click="showAction(this.ACTION_TYPES.JOIN_TYPE)" v-if="!userIsLoged">Зарегистрироваться</button>
       </p>
     </div>
 
@@ -46,18 +46,7 @@ export default {
       this.actionType = currentAction;
     },
 
-    openModal(message, type) {
-      if(message !== undefined && type !== undefined) {
-        this.modalMessage = message;
-        this.modalType = type;
 
-        const store = this.$store;
-        store.dispatch('openModal');
-        setTimeout(function () {
-          store.dispatch('closeModal');
-        }, 2000);
-      }
-    },
   }
 }
 </script>

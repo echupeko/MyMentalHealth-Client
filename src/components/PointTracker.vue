@@ -28,5 +28,7 @@ export default {
   background-color: #eee;
   color: #333333;
   cursor: pointer;
+
+  .custom-input
 }
 </style>

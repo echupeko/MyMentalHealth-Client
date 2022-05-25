@@ -1,0 +1,125 @@
+@import "variables";
+
+.custom-button() {
+  display: inline-block;
+  box-sizing: border-box;
+  padding: 0 25px;
+  margin: 15px 10px;
+  outline: none;
+  border: 1px solid @white;
+  border-radius: 50px;
+  width: max-content;
+  height: 46px;
+  line-height: 46px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  color: @gray;
+  background-color: @white;
+  box-shadow: @box-shadow;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  touch-action: manipulation;
+  vertical-align: top;
+  transition: box-shadow 0.2s;
+
+  &:focus-visible {
+    border: 1px solid @green;
+    outline: none;
+  }
+
+  &:hover {
+    transition: all 0.2s;
+    box-shadow: @box-shadow-hover;
+  }
+
+  &:active {
+    background-color: @green;
+    border: 1px solid @green;
+    color: white;
+  }
+
+  &:disabled {
+    background-color: @lighten-gray;
+    border-color: @lighten-gray;
+    color: @gray;
+    cursor: not-allowed;
+
+    &:hover {
+      box-shadow: @box-shadow;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: white;
+    color:  #555;
+    box-shadow: @box-shadow-light;
+  }
+
+  @media (prefers-color-scheme: light) {
+    background:  #333;
+    color: white;
+  }
+}
+
+.custom-input() {
+  width: 250px;
+  padding: 10px;
+  border-radius: 15px;
+  border: 0;
+  box-shadow: @box-shadow;
+
+  &:focus-visible {
+    border: none;
+    outline: none;
+  }
+
+  &[type=date] {
+    width: 100px;
+
+    &::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+    }
+  }
+
+  @media (prefers-color-scheme: dark) {
+    background: white;
+    color:  #555;
+    box-shadow: @box-shadow-light;
+  }
+
+  @media (prefers-color-scheme: light) {
+
+    background:  #333;
+    color: white;
+  }
+}
+
+.dark() {
+  @media (prefers-color-scheme: dark) {
+    background: @dark-gray;
+    color: @lighten-blue;
+  }
+
+  &.inverse {
+    @media (prefers-color-scheme: dark) {
+      background: @white;
+      color: @blue;
+    }
+  }
+}
+
+.light() {
+  @media (prefers-color-scheme: light) {
+    background: @white;
+    color: @blue;
+  }
+
+  &.inverse {
+    @media (prefers-color-scheme: light) {
+      background: @dark-gray;
+      color: @lighten-blue;
+    }
+  }
+}
